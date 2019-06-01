@@ -19,16 +19,6 @@ function Decrypt(key,status) {
     }
 
 }
-// function Encrypt() {
-
-//     // Encrypt
-//     var ciphertext = CryptoJS.DES.encrypt('my message', 'secret key 123');
-
-//     // Decrypt
-//     var bytes = CryptoJS.DES.decrypt(ciphertext.toString(), 'secret key 123');
-//     var plaintext = bytes.toString(CryptoJS.enc.Utf8);
-//     console.log("Real text->>"+plaintext);
-// }
 function Encryption() {
     Encrypt("3b3898371520f75e");
     Decrypt("922fb510c71f436e",0);
