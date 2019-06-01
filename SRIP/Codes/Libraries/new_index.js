@@ -1,6 +1,7 @@
 /* Key formation here*/
 
-var RoundKey = [];    //for storing keys for each rund to take use in decrypt function
+var orderofpressing = "";
+var Round_keys = [];
 var key_parts = []; //storing left and right sub parts
 var text_parts = [];//storing left and right sub parts
 var cipherText; //storing cipher comes after encrypt function
@@ -53,12 +54,12 @@ function key_PC_2() {
     //this is a 48 bit key
     return round_key;
 }
-function shift_left_1(CD) {
+function shift_left_1(shift_txt) {
     var newStr = "";
     for (var i = 0; i < 27; i++) {
-        newStr = newStr + CD[i + 1];
+        newStr = newStr + shift_txt[i + 1];
     }
-    newStr = newStr + CD[0];
+    newStr = newStr + shift_txt[0];
     return newStr;
 }
 
@@ -68,13 +69,13 @@ function key_per_round(round_no) {
         key_parts[0] = shift_left_1(key_parts[0]);
         key_parts[1] = shift_left_1(key_parts[1]);
     }
+    console.log("Shift->" + shift_counter + " for round->>" + round_no);
     console.log("After shifting Part-1->>" + key_parts[0]);
     console.log("After shifting Part-2->>" + key_parts[1]);
     //here each parts have their bits left shifted according to round number
     //now the pc-2 for generation of key
     var round_key = key_PC_2();
-    RoundKey.push(round_key);
-    return round_key;
+    Round_keys.push(round_key);
 }
 function key_init(key) {
     //here key is 64 bit
@@ -85,6 +86,10 @@ function key_init(key) {
     console.log("Now the key is of 56 bit and is divided into two parts");
     console.log("Before shifting Part-1->>" + key_parts[0]);
     console.log("Before shifting Part-2->>" + key_parts[1]);
+
+    for (var i = 0; i < 16; i++) {
+        key_per_round(i + 1);
+    }
 }
 
 
@@ -101,7 +106,7 @@ function remove_spaces(text) {
     for (i = 0; i < text.length; i++)
         if (text.charAt(i) != " ")
             // not a space, include it
-            outstr = outstr+text.charAt(i);
+            outstr = outstr + text.charAt(i);
 
     return outstr;
 }
@@ -135,13 +140,18 @@ function text_init(text) {
 function XOR_F(a, b) {
     //both a and b are 48 bits
     var i;
+    var newstr = "";
     for (i = 0; i < a.length; i++)
-        a[i] = a[i] ^ b[i];
-    return a;
+        if (a[i] == b[i]) {
+            newstr = newstr + "0";
+        } else {
+            newstr = newstr + "1";
+        }
+    return newstr;
 }
 
 function text_Round_Encrypt(roundNo) {
-    var roundKey = key_per_round(roundNo);
+    var roundKey = Round_keys[roundNo - 1];
     console.log("Round-key->>" + roundKey);
     var fResult = DES_F_Function(text_parts[1], roundKey);
     console.log("DES output->>" + fResult);
@@ -176,6 +186,7 @@ function FP_text() {
 function E_prem_text(text) {
     //here text is 32 bit
     var newtext = "";
+    console.log("Text for E prem->>" + text);
     for (var i = 0; i < E_perm.length; i++) {
         newtext = newtext + text[E_perm[i] - 1];
     }
@@ -249,6 +260,8 @@ function DES_F_Function(textPart, roundKey) {
     console.log("text after E permutation->>" + textPart);
     //here the textpart is now 48 bit
     var xorResult = XOR_F(textPart, roundKey);
+    console.log("A used for XOR->>" + textPart);
+    console.log("B used for XOR->>" + roundKey);
     console.log("text after xor permutation->>" + xorResult);
     //here the result is divided into 8 blocks of 6bits each for caluculation through Sbox
     var SBoxArray = [];
@@ -271,11 +284,16 @@ function DES_F_Function(textPart, roundKey) {
 
 
 
+function var_init() {
 
+    key_parts = []; //storing left and right sub parts
+    text_parts = [];//storing left and right sub parts
+}
 
-function Encrypt() {
-    key_init("3b3898371520f75e");
-    text_init("00010100 11010111 01001001 00010010 01111100 10011110 00011011 10000010");
+function Encrypt(key, text) {
+    var_init();
+    key_init(key);
+    text_init(text);
 
     for (var i = 0; i < 16; i++) {
         console.log("***********************************************************************************");
@@ -289,35 +307,35 @@ function Encrypt() {
     cipherText = FP_text();
     console.log("Cipher text length->>" + cipherText.length + "\n Cipher->>" + cipherText);
 
+    var output_txt = (cipherText.slice(0, 8) + " " + cipherText.slice(8, 16) + " " + cipherText.slice(16, 24) + " " + cipherText.slice(24, 32) + " " + cipherText.slice(32, 40) + " " + cipherText.slice(40, 48) + " " + cipherText.slice(48, 56) + " " + cipherText.slice(56, 64));
+    document.getElementById("output").value = output_txt;
+    return cipherText;
 }
-function Decrypt() {
+function Decrypt(key, text) {
     console.log("***********************************************************************************");
-    console.log("***********************************************************************************");
-    console.log("***********************************************************************************");
-
-    text_parts = [];
-    text_parts = IP_text(cipherText);
+    var_init();
+    key_init(key);
+    text_init(text);
 
     //now performing 32 bit swap
     var temp = text_parts[0];
     text_parts[0] = text_parts[1];
     text_parts[1] = temp;
 
-
-
-    for (var i = 15; i >= 0; i--) {
+    for (var i = 16; i > 0; i--) {
         console.log("***********************************************************************************");
         text_Round_Decrypt(i);
     }
 
-
     var initial_text = FP_text();
-    console.log("Initial text length->>" + initial_text.length + "\n Initial->>" + initial_text);
-    console.log("00010100 11010111 01001001 00010010 01111100 10011110 00011011 10000010");
+    console.log("Initial text length->>" + initial_text.length);
+    var output_txt = (initial_text.slice(0, 8) + " " + initial_text.slice(8, 16) + " " + initial_text.slice(16, 24) + " " + initial_text.slice(24, 32) + " " + initial_text.slice(32, 40) + " " + initial_text.slice(40, 48) + " " + initial_text.slice(48, 56) + " " + initial_text.slice(56, 64));
+    document.getElementById("output").value = output_txt;
+    return initial_text;
 }
 
 function text_Round_Decrypt(roundNo) {
-    var roundKey = RoundKey[roundNo];
+    var roundKey = Round_keys[roundNo - 1];
     console.log("Round-key->>" + roundKey);
     var fResult = DES_F_Function(text_parts[0], roundKey);
     console.log("DES output->>" + fResult);
@@ -325,4 +343,128 @@ function text_Round_Decrypt(roundNo) {
 
     text_parts[1] = text_parts[0];    //L1 = R0
     text_parts[0] = xorResult;  //R1=f(R0,k0) + L0
+}
+
+
+/*****************************************************Triple DES function**************************************************************************/
+function checkAnswer() {
+    if (orderofpressing == "EDE") {
+        TripleDES_Encrypt();
+        orderofpressing = "";
+    }
+    else if (orderofpressing == "DED") {
+        TripleDES_Decrypt();
+        orderofpressing = "";
+    } else {
+        document.getElementById("status").value = "Procedural->>Wrong Answer!";
+        orderofpressing = "";
+    }
+
+}
+function TripleDES_Encrypt() {
+    var ans = document.getElementById("answer").value;
+    ans = remove_spaces(ans);
+    var text = document.getElementById("plain_text").value;
+    var key1 = document.getElementById("key_A").value;
+    var key2 = document.getElementById("key_B").value;
+
+    var encryptedText1 = Encrypt(key1, text);
+    var decryptedText = Decrypt(key2, encryptedText1);
+    var encryptedText2 = Encrypt(key1, decryptedText);
+
+    if (ans == encryptedText2) {
+        document.getElementById("status").value = "Encryption ->>Correct Answer!";
+    } else {
+        document.getElementById("status").value = "Encryption ->>Wrong Answer!";
+    }
+}
+function TripleDES_Decrypt() {
+    var ans = document.getElementById("answer").value;
+    ans = remove_spaces(ans);
+    var text = document.getElementById("plain_text").value;
+    var key1 = document.getElementById("key_A").value;
+    var key2 = document.getElementById("key_B").value;
+
+    var decryptedText1 = Decrypt(key1, text);
+    var encryptedText = Encrypt(key2, decryptedText1);
+    var decryptedText2 = Decrypt(key1, encryptedText);
+
+    if (ans == decryptedText2) {
+        document.getElementById("status").value = "Decryption ->>Correct Answer!";
+    } else {
+        document.getElementById("status").value = "Decryption ->>Wrong Answer!";
+    }
+}
+function DES_Encrypt() {
+    var text = document.getElementById("text").value;
+    var key = document.getElementById("key").value;
+    text = remove_spaces(text);
+    key = remove_spaces(key);
+    if (text.length !== 64 | key.length !== 16) {
+        alert("64 bit plain text (binary) and 16 bit hex is required ");
+    }
+    else if (Validite(text)!==1) {
+        alert("64 bit plain text (binary) is required ");
+    }
+    else {
+        var encryptedText = Encrypt(key, text);
+        orderofpressing = orderofpressing + "E";
+    }
+
+}
+function DES_Decrypt() {
+    var text = document.getElementById("text").value;
+    var key = document.getElementById("key").value;
+    text = remove_spaces(text);
+    key = remove_spaces(key);
+    if (text.length !== 64 | key.length !== 16) {
+        alert("64 bit plain text (binary) and 16 bit hex is required ");
+    }
+    else if (Validite(text)!==1) {
+        alert("64 bit plain text (binary) is required ");
+    }
+    else {
+        var decryptedText = Decrypt(key, text);
+        orderofpressing = orderofpressing + "D";
+    }
+
+}
+
+function changePlainText() {
+    var txt = document.getElementById("plain_text");
+    var randtxt = Math.floor((Math.random() * 18446744073709551615) + 10000000000000000000);
+
+    var temp = parseInt(randtxt, 10).toString(2);
+    temp = (temp.slice(0, 8) + " " + temp.slice(8, 16) + " " + temp.slice(16, 24) + " " + temp.slice(24, 32) + " " + temp.slice(32, 40) + " " + temp.slice(40, 48) + " " + temp.slice(48, 56) + " " + temp.slice(56, 64));
+
+    txt.value = temp;
+}
+function changeKeyA() {
+    var keyA = document.getElementById("key_A");
+
+    var randtxt = Math.floor((Math.random() * 1844674407370955161) + 1000000000000000000);
+
+    var temp = parseInt(randtxt, 10).toString(16);
+    keyA.value = temp;
+}
+function changeKeyB() {
+    var keyB = document.getElementById("key_B");
+    var randtxt = Math.floor((Math.random() * 1844674407370955161) + 1000000000000000000);
+
+    var temp = parseInt(randtxt, 10).toString(16);
+    keyB.value = temp;
+}
+function Validite(txt){
+    var state=0;
+    var i;
+    for( i=0;i<txt.length;i++){
+        state=0;
+        if(txt[i]=="0" | txt[i]=="1"){
+            state=1;
+        }
+    }
+    if(i!==64){
+        state=0;
+    }
+    return state;
 }

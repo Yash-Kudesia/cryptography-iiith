@@ -28,22 +28,22 @@
                 <td style="text-align: center;"> Message </td>
                 <td>
                     <input style="width:90%" type="text" id="plain_text" name="Plain Text" readonly
-                        value=" 00000110 01100100 10110111 11110101 10001001 11100010 10010101 0110100"><br>
-                    <button>Change Plain Text</button>
+                        value=" 00000110 01100100 10110111 11110101 10001001 11100010 10010101 01101000"><br>
+                    <button onclick="changePlainText()">Change Plain Text</button>
                 </td>
             </tr>
             <tr>
                 <td style="text-align: center;"> Key Part A </td>
                 <td>
                     <input type="text" id="key_A" name="Key A" readonly value="3b3898371520f75e">
-                    <button>Change Key A</button>
+                    <button onclick="changeKeyA()">Change Key A</button>
                 </td>
             </tr>
             <tr>
                 <td style="text-align: center;"> Key Part B </td>
                 <td>
-                    <input type="text" id="key_B" name="Key B" readonly value="922fb510c71f436e">
-                    <button>Change Key B</button>
+                    <input type="text" id="key_B" name="key B" readonly value="922fb510c71f436e">
+                    <button onclick="changeKeyB()">Change Key B</button>
                 </td>
             </tr>
         </table>
@@ -64,7 +64,7 @@
                     Your text to be <br>encrypted/decrypted: </td>
                 <td>
                     <input style="width:90%;" type="text" id="text" name="Plain Text"
-                        value=" 00000110 01100100 10110111 11110101 10001001 11100010 10010101 0110100"><br>
+                        value=""><br>
                 </td>
             </tr>
             <tr>
@@ -75,8 +75,8 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <button id="Encrypt" onclick="Encrypt()">DES Encrypt</button>
-                    <button id="Decrypt" onclick="Decrypt()">DES Decrypt</button>
+                    <button id="Encrypt" onclick="DES_Encrypt()">DES Encrypt</button>
+                    <button id="Decrypt" onclick="DES_Decrypt()">DES Decrypt</button>
                 </td>
             </tr>
             <tr>
@@ -98,7 +98,8 @@
         <br>
         <p>Enter Your Answers Here : </p>
         <input type="text" id="answer" style="width:80%;" name="Answer" value=""><br><br>
-        <button id="check_answer">Check Answer</button>
+        <button id="check_answer" onclick="checkAnswer()">Check Answer</button><br>
+        <input type="text" id="status" style="width:80%;" name="status" readonly value=""><br><br>
     </div>
     <br><br>
 
